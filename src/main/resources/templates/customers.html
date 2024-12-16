@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold mb-6">Müşteri Listesi</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                <tr class="bg-gray-100">
+                    <th class="px-6 py-3 text-left">İsim</th>
+                    <th class="px-6 py-3 text-left">Tür</th>
+                    <th class="px-6 py-3 text-left">Bütçe</th>
+                    <th class="px-6 py-3 text-left">Toplam Harcama</th>
+                    <th class="px-6 py-3 text-left">İşlemler</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="customer : ${customers}">
+                    <td class="px-6 py-4" th:text="${customer.customerName}">John Doe</td>
+                    <td class="px-6 py-4">
+                                <span th:if="${customer.customerType == 'PREMIUM'}"
+                                      class="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
+                                    Premium
+                                </span>
+                        <span th:if="${customer.customerType == 'STANDARD'}"
+                              class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
+                                    Standard
+                                </span>
+                    </td>
+                    <td class="px-6 py-4" th:text="${customer.budget}">1000</td>
+                    <td class="px-6 py-4" th:text="${customer.totalSpent}">500</td>
+                    <td class="px-6 py-4">
+                        <a th:href="@{/orders/new(customerId=${customer.id})}"
+                           class="text-blue-600 hover:text-blue-800">New Order</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

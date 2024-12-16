@@ -1,0 +1,42 @@
+package yazlab.smartstock.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import yazlab.smartstock.service.CustomerService;
+import yazlab.smartstock.service.OrderService;
+import yazlab.smartstock.service.ProductService;
+
+@Controller
+@RequiredArgsConstructor
+public class WebController {
+    private final CustomerService customerService;
+    private final ProductService productService;
+    private final OrderService orderService;
+
+    @GetMapping("/")
+    public String index(Model model) {
+        model.addAttribute("products", productService.findAll());
+        model.addAttribute("activeOrders", orderService.findActiveOrders());
+        return "index";
+    }
+
+    @GetMapping("/customers")
+    public String customers(Model model) {
+        model.addAttribute("customers", customerService.findAll());
+        return "customers";
+    }
+
+    @GetMapping("/products")
+    public String products(Model model) {
+        model.addAttribute("products", productService.findAll());
+        return "products";
+    }
+
+    @GetMapping("/orders")
+    public String orders(Model model) {
+        model.addAttribute("orders", orderService.findAll());
+        return "orders";
+    }
+}

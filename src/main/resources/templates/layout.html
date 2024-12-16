@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Stock Management</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+    .nav-link {
+      color: #374151;
+      padding: 0.5rem 1rem;
+      transition: color 0.2s;
+    }
+    .nav-link:hover {
+      color: #10B981;
+    }
+    .card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+<nav class="bg-white shadow-lg">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex justify-between">
+      <div class="flex space-x-7">
+        <div>
+          <a href="/" class="flex items-center py-4">
+            <span class="font-semibold text-gray-700 text-lg">SmartStock</span>
+          </a>
+        </div>
+        <div class="hidden md:flex items-center space-x-1">
+          <a href="/" class="nav-link">Dashboard</a>
+          <a href="/customers" class="nav-link">Customers</a>
+          <a href="/products" class="nav-link">Products</a>
+          <a href="/orders" class="nav-link">Orders</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8">
+  <div th:replace="${content}">
+    <!-- -->
+  </div>
+</div>
+
+<script>
+
+</script>
+</body>
+</html>

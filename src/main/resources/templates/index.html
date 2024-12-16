@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Stock Status</h2>
+            <div class="space-y-4">
+                <div th:each="product : ${products}" class="flex justify-between items-center border-b pb-2">
+                    <span th:text="${product.productName}" class="text-gray-700">Product Name</span>
+                    <div class="flex items-center">
+                        <span th:text="${product.stock}" class="font-bold text-gray-800">100</span>
+                        <span class="ml-2 text-sm text-gray-500">units</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Active Orders</h2>
+            <div class="space-y-4">
+                <div th:each="order : ${activeOrders}" class="border p-4 rounded bg-gray-50">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-bold text-gray-800" th:text="${order.customer.customerName}">Customer Name</span>
+                            <span class="ml-2 text-sm text-gray-500" th:text="${order.orderStatus}">Status</span>
+                        </div>
+                        <div class="text-sm text-gray-700">
+                            <span th:text="${order.quantity}">5</span> x
+                            <span th:text="${order.product.productName}">Product</span>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(activeOrders)}" class="text-gray-500 text-center py-4">
+                    Aktif sipariş bulunamadı.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
