@@ -1,44 +1,273 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<body>
-<div th:fragment="content">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStock - Akıllı Alışveriş Deneyimi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+    <style>
+        .hero-pattern {
+            background-color: #2563eb;
+            background-image: linear-gradient(315deg, #2563eb 0%, #1d4ed8 74%);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 2rem;
+        }
 
-        <div class="card">
-            <h2 class="text-xl font-bold mb-4 text-gray-800">Stock Status</h2>
-            <div class="space-y-4">
-                <div th:each="product : ${products}" class="flex justify-between items-center border-b pb-2">
-                    <span th:text="${product.productName}" class="text-gray-700">Product Name</span>
-                    <div class="flex items-center">
-                        <span th:text="${product.stock}" class="font-bold text-gray-800">100</span>
-                        <span class="ml-2 text-sm text-gray-500">units</span>
-                    </div>
-                </div>
+        .product-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .price-tag {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<!-- fragments/navbar.html -->
+<nav th:fragment="navbar" class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex-shrink-0 flex items-center">
+                <a href="/" class="text-2xl font-bold text-blue-600">SmartStock</a>
             </div>
-        </div>
-
-
-        <div class="card">
-            <h2 class="text-xl font-bold mb-4 text-gray-800">Active Orders</h2>
-            <div class="space-y-4">
-                <div th:each="order : ${activeOrders}" class="border p-4 rounded bg-gray-50">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <span class="font-bold text-gray-800" th:text="${order.customer.customerName}">Customer Name</span>
-                            <span class="ml-2 text-sm text-gray-500" th:text="${order.orderStatus}">Status</span>
-                        </div>
-                        <div class="text-sm text-gray-700">
-                            <span th:text="${order.quantity}">5</span> x
-                            <span th:text="${order.product.productName}">Product</span>
-                        </div>
-                    </div>
+            <div class="flex space-x-4">
+                <a href="/" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Ana Sayfa</a>
+                <!-- Eğer kullanıcı giriş yapmışsa -->
+                <div th:if="${session.currentCustomer != null}">
+                    <a href="/account" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Hesabım</a>
+                    <a href="/auth/logout" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Çıkış Yap</a>
                 </div>
-                <div th:if="${#lists.isEmpty(activeOrders)}" class="text-gray-500 text-center py-4">
-                    Aktif sipariş bulunamadı.
+                <!-- Eğer kullanıcı giriş yapmamışsa -->
+                <div th:unless="${session.currentCustomer != null}">
+                    <a href="/auth/login" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Giriş Yap</a>
+                    <a href="/auth/register" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Kayıt Ol</a>
                 </div>
             </div>
         </div>
     </div>
+</nav>
+
+
+<!-- Hero Section -->
+<section class="hero-pattern">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="max-w-2xl">
+            <h1 class="text-4xl font-bold mb-4">Akıllı Alışveriş Deneyimi</h1>
+            <p class="text-xl opacity-90 mb-8">Premium müşterilere özel ayrıcalıklar ve hızlı teslimat seçenekleri ile alışverişin keyfini çıkarın.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+            <div class="text-3xl font-bold text-blue-600" th:text="${#lists.size(products)}">6</div>
+            <div class="text-gray-600">Ürün Çeşidi</div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+            <div class="text-3xl font-bold text-blue-600">24/7</div>
+            <div class="text-gray-600">Canlı Destek</div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+            <div class="text-3xl font-bold text-blue-600">%100</div>
+            <div class="text-gray-600">Müşteri Memnuniyeti</div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+            <div class="text-3xl font-bold text-blue-600">2+</div>
+            <div class="text-gray-600">Premium Müşteri</div>
+        </div>
+    </div>
 </div>
-</body>
-</html>
+
+<!-- Products Section -->
+<section class="max-w-7xl mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold mb-8 text-center">Ürünlerimiz</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Product 1 -->
+        <div class="product-card">
+            <div class="relative">
+                <img src="/api/placeholder/400/300" alt="Gaming Laptop" class="w-full h-48 object-cover rounded-t-lg">
+                <span class="price-tag">12.999 TL</span>
+                <span class="stock-badge bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle"></i> 500 Adet
+                    </span>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2">Gaming Laptop</h3>
+                <p class="text-gray-600 mb-4">Yüksek performanslı oyun bilgisayarı</p>
+                <form class="flex items-center gap-4">
+                    <input type="number" min="1" max="5" value="1"
+                           class="w-20 px-3 py-2 border rounded-lg">
+                    <button type="submit"
+                            class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Sepete Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="product-card">
+            <div class="relative">
+                <img src="/api/placeholder/400/300" alt="Akıllı Telefon" class="w-full h-48 object-cover rounded-t-lg">
+                <span class="price-tag">8.499 TL</span>
+                <span class="stock-badge bg-yellow-100 text-yellow-800">
+                        <i class="fas fa-exclamation-circle"></i> Son 10 Adet
+                    </span>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2">Akıllı Telefon</h3>
+                <p class="text-gray-600 mb-4">Son model akıllı telefon</p>
+                <form class="flex items-center gap-4">
+                    <input type="number" min="1" max="5" value="1"
+                           class="w-20 px-3 py-2 border rounded-lg">
+                    <button type="submit"
+                            class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Sepete Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="product-card">
+            <div class="relative">
+                <img src="/api/placeholder/400/300" alt="Kablosuz Kulaklık" class="w-full h-48 object-cover rounded-t-lg">
+                <span class="price-tag">1.299 TL</span>
+                <span class="stock-badge bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle"></i> 200 Adet
+                    </span>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2">Kablosuz Kulaklık</h3>
+                <p class="text-gray-600 mb-4">Aktif gürültü engellemeli kulaklık</p>
+                <form class="flex items-center gap-4">
+                    <input type="number" min="1" max="5" value="1"
+                           class="w-20 px-3 py-2 border rounded-lg">
+                    <button type="submit"
+                            class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Sepete Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product 4 -->
+        <div class="product-card">
+            <div class="relative">
+                <img src="/api/placeholder/400/300" alt="Akıllı Saat" class="w-full h-48 object-cover rounded-t-lg">
+                <span class="price-tag">2.999 TL</span>
+                <span class="stock-badge bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle"></i> 75 Adet
+                    </span>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2">Akıllı Saat</h3>
+                <p class="text-gray-600 mb-4">Spor ve sağlık takibi için akıllı saat</p>
+                <form class="flex items-center gap-4">
+                    <input type="number" min="1" max="5" value="1"
+                           class="w-20 px-3 py-2 border rounded-lg">
+                    <button type="submit"
+                            class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Sepete Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product 5 -->
+        <div class="product-card">
+            <div class="relative">
+                <img src="/api/placeholder/400/300" alt="4K Monitor" class="w-full h-48 object-cover rounded-t-lg">
+                <span class="price-tag">5.999 TL</span>
+                <span class="stock-badge bg-red-100 text-red-800">
+                        <i class="fas fa-times-circle"></i> Stokta Yok
+                    </span>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2">4K Monitor</h3>
+                <p class="text-gray-600 mb-4">Ultra HD gaming monitör</p>
+                <button disabled
+                        class="w-full bg-gray-300 text-gray-600 px-6 py-2 rounded-lg cursor-not-allowed">
+                    Stokta Yok
+                </button>
+            </div>
+        </div>
+
+        <!-- Product 6 -->
+        <div class="product-card">
+            <div class="relative">
+                <img src="/api/placeholder/400/300" alt="Mekanik Klavye" class="w-full h-48 object-cover rounded-t-lg">
+                <span class="price-tag">899 TL</span>
+                <span class="stock-badge bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle"></i> 150 Adet
+                    </span>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2">Mekanik Klavye</h3>
+                <p class="text-gray-600 mb-4">RGB aydınlatmalı gaming klavye</p>
+                <form class="flex items-center gap-4">
+                    <input type="number" min="1" max="5" value="1"
+                           class="w-20 px-3 py-2 border rounded-lg">
+                    <button type="submit"
+                            class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Sepete Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h3 class="text-xl font-bold mb-4">SmartStock</h3>
+                <p class="text-gray-400">Premium müşteri deneyimi için buradayız.</p>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">İletişim</h3>
+                <p class="text-gray-400">7/24 Canlı Destek</p>
+                <p class="text-gray-400">info@smartstock.com</p>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-4">Bizi Takip Edin</h3>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">

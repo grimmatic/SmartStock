@@ -20,4 +20,8 @@ public class Customer extends BaseEntity {
     public enum CustomerType {
         PREMIUM, STANDARD
     }
+    @Column(unique = true)
+    private String username;
+    private String password;
+    private String email;
 }

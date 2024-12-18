@@ -1,5 +1,6 @@
 package yazlab.smartstock.controller;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,5 +39,12 @@ public class WebController {
     public String orders(Model model) {
         model.addAttribute("orders", orderService.findAll());
         return "orders";
+    }
+    @GetMapping("/account")
+    public String accountPage(HttpSession session) {
+        if (session.getAttribute("currentCustomer") == null) {
+            return "redirect:/auth/login";
+        }
+        return "account";  // account sayfasına yönlendir
     }
 }
