@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kayıt Ol - SmartStock</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f3f4f6;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .register-container {
+      min-height: calc(100vh - 4rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    .register-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 600px;
+      margin: 2rem;
+    }
+
+    .form-title {
+      color: #1f2937;
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+      color: #374151;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      color: #4b5563;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .error-message {
+      background-color: #fee2e2;
+      border: 1px solid #ef4444;
+      color: #b91c1c;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .btn-register {
+      width: 100%;
+      background-color: #3b82f6;
+      color: white;
+      padding: 0.875rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 1.5rem;
+    }
+
+    .btn-register:hover {
+      background-color: #2563eb;
+    }
+
+    .terms-checkbox {
+      display: flex;
+      align-items: start;
+      gap: 0.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .login-link a {
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="register-container">
+  <div class="register-card">
+    <h1 class="form-title">Hesap Oluştur</h1>
+
+    <div th:if="${param.error}" class="error-message">
+      <p th:text="${param.error}">Hata mesajı</p>
+    </div>
+
+    <form th:action="@{/auth/register}" method="post" id="registerForm">
+      <!-- Hesap Bilgileri -->
+      <div class="form-section">
+        <h3 class="section-title">Hesap Bilgileri</h3>
+        <div class="form-group">
+          <label class="form-label">Kullanıcı Adı*</label>
+          <input type="text" name="username" class="form-input" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Şifre*</label>
+            <input type="password" name="password" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Şifre Tekrar*</label>
+            <input type="password" name="passwordConfirm" class="form-input" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kişisel Bilgiler -->
+      <div class="form-section">
+        <h3 class="section-title">Kişisel Bilgiler</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Ad*</label>
+            <input type="text" name="customerName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-posta*</label>
+            <input type="email" name="email" class="form-input" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hesap Tercihleri -->
+      <div class="form-section">
+        <h3 class="section-title">Hesap Tercihleri</h3>
+        <div class="form-group">
+          <label class="form-label">Müşteri Tipi</label>
+          <select name="customerType" class="form-input">
+            <option value="STANDARD">Standard Üyelik</option>
+            <option value="PREMIUM">Premium Üyelik</option>
+          </select>
+          <p class="text-sm text-gray-500 mt-1">
+            Premium üyelik ile siparişleriniz öncelikli işleme alınır.
+          </p>
+        </div>
+      </div>
+
+      <!-- Onay ve Şartlar -->
+      <div class="terms-checkbox">
+        <input type="checkbox" id="terms" required>
+        <label for="terms" class="text-sm text-gray-600">
+          Kullanım şartlarını ve gizlilik politikasını okudum ve kabul ediyorum.
+          Verilerimin bu kapsamda işlenmesine izin veriyorum.
+        </label>
+      </div>
+
+      <button type="submit" class="btn-register">
+        Hesap Oluştur
+      </button>
+
+      <div class="login-link">
+        Zaten hesabınız var mı? <a href="/auth/login">Giriş Yap</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Form validation
+  document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const password = document.querySelector('input[name="password"]').value;
+    const passwordConfirm = document.querySelector('input[name="passwordConfirm"]').value;
+
+    if (password !== passwordConfirm) {
+      e.preventDefault();
+      alert('Şifreler eşleşmiyor!');
+      return;
+    }
+  });
+</script>
+</body>
+</html>
