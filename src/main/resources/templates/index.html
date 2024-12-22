@@ -60,13 +60,19 @@
             </div>
             <div class="flex space-x-4">
                 <a href="/" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Ana Sayfa</a>
-                <!-- Eğer kullanıcı giriş yapmışsa -->
-                <div th:if="${session.currentCustomer != null}">
-                    <a href="/account" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Hesabım</a>
-                    <a href="/auth/logout" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Çıkış Yap</a>
+
+                <!-- Kullanıcı giriş yapmışsa -->
+                <div th:if="${currentCustomer != null}">
+                    <span class="text-gray-700 px-3 py-2 rounded-md font-medium" th:text="'Hoş Geldiniz, ' + ${currentCustomer.username}">Kullanıcı Adı</span>
+                    <form th:action="@{/auth/logout}" method="post" style="display: inline;">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Çıkış Yap</button>
+                    </form>
                 </div>
-                <!-- Eğer kullanıcı giriş yapmamışsa -->
-                <div th:unless="${session.currentCustomer != null}">
+
+
+                <!-- Kullanıcı giriş yapmamışsa -->
+                <div th:unless="${currentCustomer != null}">
                     <a href="/auth/login" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Giriş Yap</a>
                     <a href="/auth/register" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md font-medium">Kayıt Ol</a>
                 </div>
@@ -74,6 +80,8 @@
         </div>
     </div>
 </nav>
+
+
 
 
 <!-- Hero Section -->

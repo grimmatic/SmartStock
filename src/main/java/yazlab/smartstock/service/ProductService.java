@@ -30,4 +30,8 @@ public class ProductService {
         product.setStock(product.getStock() + quantity);
         return productRepository.save(product);
     }
+
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
 }
