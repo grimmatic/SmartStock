@@ -1,71 +1,54 @@
 package yazlab.smartstock.service;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import yazlab.smartstock.entity.Customer;
 import yazlab.smartstock.repository.CustomerRepository;
 
+import java.util.ArrayList;
+
 @Service
 @RequiredArgsConstructor
-@Slf4j
-public class AuthService {
+public class AuthService implements UserDetailsService {
+
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
-    private final HttpSession session;
 
-    public Customer register(Customer customer) {
-        try {
-            log.info("Registration attempt for username: {}", customer.getUsername());
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Customer customer = customerRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı: " + username));
 
-            // Check if username already exists
-            if (customerRepository.findByUsername(customer.getUsername()).isPresent()) {
-                throw new RuntimeException("Bu kullanıcı adı zaten kullanılıyor");
-            }
-
-            // Encode password
-            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-
-            // Set initial values
-            customer.setTotalSpent(0.0);
-            if (customer.getBudget() == null) {
-                customer.setBudget(1000.0); // Default budget
-            }
-            if (customer.getCustomerType() == null) {
-                customer.setCustomerType(Customer.CustomerType.STANDARD); // Default type
-            }
-
-            Customer savedCustomer = customerRepository.save(customer);
-            log.info("Registration successful for username: {}", customer.getUsername());
-
-            return savedCustomer;
-        } catch (Exception e) {
-            log.error("Registration failed for username: {}", customer.getUsername(), e);
-            throw e;
-        }
+        return new User(customer.getUsername(), customer.getPassword(), new ArrayList<>());
     }
 
-    public Customer login(String username, String password) {
-        try {
-            log.info("Login attempt for username: {}", username);
+    public Customer register(Customer customer) {
+        // Şifreyi hashle
+        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
 
-            Customer customer = customerRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
-
-            if (!passwordEncoder.matches(password, customer.getPassword())) {
-                log.error("Invalid password for username: {}", username);
-                throw new RuntimeException("Hatalı şifre");
-            }
-
-            session.setAttribute("currentCustomer", customer);
-            log.info("Login successful for username: {}", username);
-
-            return customer;
-        } catch (Exception e) {
-            log.error("Login failed for username: {}", username, e);
-            throw e;
+        // Varsayılan başlangıç değerlerini ayarla
+        if (customer.getTotalSpent() == null) {
+            customer.setTotalSpent(0.0); // Default total spent
         }
+        if (customer.getBudget() == null) {
+            customer.setBudget(1000.0); // Default budget
+        }
+        if (customer.getCustomerType() == null) {
+            customer.setCustomerType(Customer.CustomerType.STANDARD); // Default customer type
+        }
+
+        return customerRepository.save(customer);
+    }
+
+    public Customer getCurrentCustomer() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return customerRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı: " + username));
     }
 }
