@@ -1,5 +1,6 @@
 package yazlab.smartstock.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,14 +8,11 @@ import yazlab.smartstock.service.AuthService;
 import yazlab.smartstock.service.ProductService;
 
 @Controller
+@RequiredArgsConstructor
 public class IndexController {
+
     private final AuthService authService;
     private final ProductService productService;
-
-    public IndexController(AuthService authService, ProductService productService) {
-        this.authService = authService;
-        this.productService = productService;
-    }
 
     @GetMapping("/index")
     public String index(Model model) {
