@@ -16,13 +16,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index", "/auth/**", "/css/**", "/js/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/", "/index", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll() // Açık endpoint'ler
+                        .requestMatchers("/cart/**").permitAll() // Sepet işlemleri
+                        .anyRequest().authenticated() // Diğer tüm istekler doğrulama gerektirir
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
-                        .defaultSuccessUrl("/index", true) // Değişiklik burası
+                        .defaultSuccessUrl("/index", true) // Giriş sonrası yönlendirme
                         .failureUrl("/auth/login?error=true")
                         .permitAll()
                 )
@@ -30,6 +31,9 @@ public class SecurityConfig {
                         .logoutUrl("/auth/logout")
                         .logoutSuccessUrl("/auth/login?logout=true")
                         .permitAll()
+                )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/cart/**") // AJAX işlemleri için CSRF korumasını devre dışı bırak
                 );
 
         return http.build();
