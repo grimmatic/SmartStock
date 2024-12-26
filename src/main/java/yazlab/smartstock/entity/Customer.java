@@ -15,13 +15,21 @@ public class Customer extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CustomerType customerType;
 
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER; // Varsayılan rol USER
+
     private Double totalSpent;
 
-    public enum CustomerType {
-        PREMIUM, STANDARD
-    }
     @Column(unique = true)
     private String username;
     private String password;
     private String email;
+
+    public enum CustomerType {
+        PREMIUM, STANDARD
+    }
+
+    public enum Role {
+        USER, ADMIN
+    }
 }

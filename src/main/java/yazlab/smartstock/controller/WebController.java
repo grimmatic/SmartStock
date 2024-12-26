@@ -16,13 +16,6 @@ public class WebController {
     private final ProductService productService;
     private final OrderService orderService;
 
-    @GetMapping("/")
-    public String index(Model model) {
-        model.addAttribute("products", productService.findAll());
-        model.addAttribute("activeOrders", orderService.findActiveOrders());
-        return "index";
-    }
-
     @GetMapping("/customers")
     public String customers(Model model) {
         model.addAttribute("customers", customerService.findAll());
@@ -40,11 +33,18 @@ public class WebController {
         model.addAttribute("orders", orderService.findAll());
         return "orders";
     }
+
     @GetMapping("/account")
     public String accountPage(HttpSession session) {
         if (session.getAttribute("currentCustomer") == null) {
             return "redirect:/auth/login";
         }
-        return "account";  // account sayfasına yönlendir
+        return "account";
+    }
+
+    @GetMapping("/admin")
+    public String adminPage(Model model) {
+        model.addAttribute("pendingOrders", orderService.getPendingOrders());
+        return "admin";
     }
 }
