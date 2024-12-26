@@ -52,6 +52,7 @@
                         <th class="px-6 py-3 text-left">Miktar</th>
                         <th class="px-6 py-3 text-left">Toplam Fiyat</th>
                         <th class="px-6 py-3 text-left">Sipariş Tarihi</th>
+                        <th class="px-6 py-3 text-left">Öncelik Skoru</th>
                         <th class="px-6 py-3 text-left">Durum</th>
                     </tr>
                     </thead>
@@ -59,20 +60,21 @@
                     <tr th:each="order : ${pendingOrders}" class="border-t">
                         <td class="px-6 py-4" th:text="${order.customer.customerName}">John Doe</td>
                         <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs rounded-full"
-                                          th:class="${order.customer.customerType == 'PREMIUM' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}"
-                                          th:text="${order.customer.customerType}">
-                                        STANDARD
-                                    </span>
+        <span class="px-2 py-1 text-xs rounded-full"
+              th:class="${order.customer.customerType == 'PREMIUM' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}"
+              th:text="${order.customer.customerType}">
+            STANDARD
+        </span>
                         </td>
                         <td class="px-6 py-4" th:text="${order.product.productName}">Product</td>
                         <td class="px-6 py-4" th:text="${order.quantity}">1</td>
                         <td class="px-6 py-4" th:text="${order.totalPrice + ' TL'}">100 TL</td>
                         <td class="px-6 py-4" th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                        <td class="px-6 py-4" th:text="${order.priorityScore}">50.0</td> <!-- Öncelik Skoru -->
                         <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
-                                        Bekliyor
-                                    </span>
+        <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+            Bekliyor
+        </span>
                         </td>
                     </tr>
                     </tbody>

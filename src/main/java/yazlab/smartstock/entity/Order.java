@@ -22,6 +22,10 @@ public class Order extends BaseEntity {
     private Double totalPrice;
     private LocalDateTime orderDate;
 
+
+    @Transient
+    private Double priorityScore;
+
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
@@ -30,4 +34,20 @@ public class Order extends BaseEntity {
         COMPLETED,  // Sipariş onaylandı ve tamamlandı
         CANCELLED  // Sipariş iptal edildi
     }
+
+
+    // Dinamik PriorityScore Hesaplama
+    public Double getPriorityScore() {
+        double basePriority = customer.getCustomerType() == Customer.CustomerType.PREMIUM ? 15 : 10;
+
+        // Bekleme Süresi (saniye cinsinden)
+        long waitingTimeInSeconds = java.time.Duration.between(orderDate, LocalDateTime.now()).getSeconds();
+
+        // Bekleme Süresi Ağırlığı
+        double waitingWeight = 0.5;
+
+        // Öncelik Skoru Hesaplama
+        return basePriority + (waitingTimeInSeconds * waitingWeight);
+    }
+
 }

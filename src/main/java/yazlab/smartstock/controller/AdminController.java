@@ -23,13 +23,17 @@ public class AdminController {
 
     @GetMapping("/orders")
     public String viewOrders(Model model) {
-        model.addAttribute("pendingOrders", orderService.getPendingOrders());
+        model.addAttribute("pendingOrders", orderService.getPendingOrdersSortedByPriority());
         model.addAttribute("currentCustomer", authService.getCurrentCustomer());
         return "admin/orders";
     }
+
+
+
+
     @GetMapping
     public String adminPage(Model model) {
-        model.addAttribute("pendingOrders", orderService.getPendingOrders());
+        model.addAttribute("pendingOrders", orderService.getPendingOrdersSortedByPriority());
         model.addAttribute("currentCustomer", authService.getCurrentCustomer()); // Bunu ekleyelim
         return "admin";
     }
