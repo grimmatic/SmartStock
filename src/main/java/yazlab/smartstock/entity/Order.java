@@ -26,6 +26,9 @@ public class Order extends BaseEntity {
     private OrderStatus orderStatus;
 
     public enum OrderStatus {
-        PENDING, PROCESSING, COMPLETED, CANCELLED
+        PENDING,    // Sipariş verildi, admin onayı bekliyor
+        PROCESSING, // Admin onayladı, işleniyor
+        COMPLETED,  // Sipariş tamamlandı
+        CANCELLED  // Sipariş iptal edildi
     }
 }

@@ -16,18 +16,30 @@ public class IndexController {
         this.productService = productService;
     }
 
+    // Ana sayfa için endpoint
+    @GetMapping("/")
+    public String root(Model model) {
+        return getIndexPage(model);
+    }
+
+    // /index için endpoint
     @GetMapping("/index")
     public String index(Model model) {
+        return getIndexPage(model);
+    }
+
+    private String getIndexPage(Model model) {
+        // Giriş yapmış kullanıcının bilgilerini ekle
         try {
-            // Giriş yapan kullanıcının bilgilerini ekle
             model.addAttribute("currentCustomer", authService.getCurrentCustomer());
         } catch (Exception e) {
-            // Eğer kullanıcı giriş yapmamışsa null olarak ekle
+            // Kullanıcı giriş yapmamışsa null olarak ekle
             model.addAttribute("currentCustomer", null);
         }
 
-        // Ürün listesini modele ekle
+        // Tüm ürünleri ekle (giriş yapılıp yapılmadığına bakmaksızın)
         model.addAttribute("products", productService.getAllProducts());
+
         return "index";
     }
 }

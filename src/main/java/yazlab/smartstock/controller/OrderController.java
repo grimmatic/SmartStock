@@ -25,8 +25,12 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-        return ResponseEntity.ok(orderService.processOrder(order));
+    public ResponseEntity<?> createOrder(@RequestBody Order order) {
+        try {
+            return ResponseEntity.ok(orderService.processOrder(order));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/{id}/status")
