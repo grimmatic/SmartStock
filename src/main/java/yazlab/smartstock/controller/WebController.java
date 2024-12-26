@@ -42,9 +42,4 @@ public class WebController {
         return "account";
     }
 
-    @GetMapping("/admin")
-    public String adminPage(Model model) {
-        model.addAttribute("pendingOrders", orderService.getPendingOrders());
-        return "admin";
-    }
 }
