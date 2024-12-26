@@ -5,10 +5,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import yazlab.smartstock.entity.Customer;
+import yazlab.smartstock.entity.Order;
 import yazlab.smartstock.entity.Product;
 import yazlab.smartstock.repository.CustomerRepository;
+import yazlab.smartstock.repository.OrderRepository;
 import yazlab.smartstock.repository.ProductRepository;
+import yazlab.smartstock.service.OrderService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +24,8 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final OrderService orderService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -27,6 +33,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         initializeCustomers();
         initializeAdmin();
         initializeProducts();
+        initializeOrderPriorityScores(); // Yeni eklenen metod
+       // initializeOrders();
     }
 
     private void initializeCustomers() {
@@ -93,7 +101,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private void initializeProducts() {
         if (productRepository.count() == 0) {
             List<Product> products = Arrays.asList(
-                    createProduct("Kahve", 45.99, 150),
+                    createProduct("Kahve", 45.99, 7),
                     createProduct("Çay (1 kg)", 89.99, 200),
                     createProduct("Su (5 lt)", 25.99, 300),
                     createProduct("Bisküvi Paketi", 15.99, 250),
@@ -102,7 +110,8 @@ public class DatabaseInitializer implements CommandLineRunner {
                     createProduct("Cips", 22.99, 350),
                     createProduct("Ekmek", 7.99, 500),
                     createProduct("Süt (1 lt)", 19.99, 200),
-                    createProduct("Yoğurt (1 kg)", 35.99, 150)
+                    createProduct("Yoğurt (1 kg)", 35.99, 150),
+                    createProduct("Anan", 31.31, 7)
             );
 
             productRepository.saveAll(products);
@@ -131,4 +140,42 @@ public class DatabaseInitializer implements CommandLineRunner {
         product.setStock(stock);
         return product;
     }
+
+    private void initializeOrderPriorityScores() {
+        // Eğer daha önce oluşturulmuş siparişler varsa öncelik skorlarını güncelle
+        List<Order> orders = orderRepository.findAll();
+        for (Order order : orders) {
+            if (order.getPriorityScore() == null || order.getPriorityScore() == 0.0) {
+                order.setPriorityScore(orderService.calculatePriorityScore(order));
+                orderRepository.save(order);
+            }
+        }
+        System.out.println("Eski siparişlerin öncelik skorları başarıyla güncellendi.");
+    }
+
+
+    private void initializeOrders() {
+        if (orderRepository.count() < 100) {
+            // Örnek müşteri
+            Customer premiumCustomer = customerRepository.findByUsername("premium1").orElseThrow();
+            Customer standardCustomer = customerRepository.findByUsername("user1").orElseThrow();
+
+            // Örnek siparişler
+            Order order1 = new Order();
+            order1.setCustomer(premiumCustomer);
+            order1.setOrderDate(LocalDateTime.now().minusSeconds(120)); // 2 dakika önce
+            order1.setOrderStatus(Order.OrderStatus.PENDING);
+            order1.setPriorityScore(orderService.calculatePriorityScore(order1));
+
+            Order order2 = new Order();
+            order2.setCustomer(standardCustomer);
+            order2.setOrderDate(LocalDateTime.now().minusSeconds(60)); // 1 dakika önce
+            order2.setOrderStatus(Order.OrderStatus.PENDING);
+            order2.setPriorityScore(orderService.calculatePriorityScore(order2));
+
+            // Kaydet
+            orderRepository.saveAll(List.of(order1, order2));
+        }
+    }
+
 }
