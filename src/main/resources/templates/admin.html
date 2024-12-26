@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Siparişler</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+    <style>
+        .order-list {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+        .log-panel {
+            height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Admin Paneli</h1>
+        <div class="flex gap-4">
+            <button id="approveAllBtn" onclick="approveAllOrders()"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                Tüm Siparişleri Onayla
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Bekleyen Siparişler</h3>
+            <p class="text-3xl font-bold" th:text="${pendingOrders.size()}">0</p>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4">Bekleyen Siparişler</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Müşteri</th>
+                        <th class="px-6 py-3 text-left">Müşteri Tipi</th>
+                        <th class="px-6 py-3 text-left">Ürün</th>
+                        <th class="px-6 py-3 text-left">Miktar</th>
+                        <th class="px-6 py-3 text-left">Toplam Fiyat</th>
+                        <th class="px-6 py-3 text-left">Sipariş Tarihi</th>
+                        <th class="px-6 py-3 text-left">Durum</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order : ${pendingOrders}" class="border-t">
+                        <td class="px-6 py-4" th:text="${order.customer.customerName}">John Doe</td>
+                        <td class="px-6 py-4">
+                                    <span class="px-2 py-1 text-xs rounded-full"
+                                          th:class="${order.customer.customerType == 'PREMIUM' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}"
+                                          th:text="${order.customer.customerType}">
+                                        STANDARD
+                                    </span>
+                        </td>
+                        <td class="px-6 py-4" th:text="${order.product.productName}">Product</td>
+                        <td class="px-6 py-4" th:text="${order.quantity}">1</td>
+                        <td class="px-6 py-4" th:text="${order.totalPrice + ' TL'}">100 TL</td>
+                        <td class="px-6 py-4" th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                        <td class="px-6 py-4">
+                                    <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+                                        Bekliyor
+                                    </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Panel -->
+    <div class="mt-6 bg-white rounded-lg shadow">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4">Sistem Logları</h2>
+            <div id="logPanel" class="log-panel bg-gray-50 p-4 rounded-lg">
+                <!-- Loglar buraya dinamik olarak eklenecek -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function approveAllOrders() {
+        if (!confirm('Tüm bekleyen siparişleri onaylamak istediğinize emin misiniz?')) {
+            return;
+        }
+
+        fetch('/admin/orders/approve-all', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.text())
+            .then(result => {
+                alert(result);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Bir hata oluştu');
+            });
+    }
+
+    // Logları güncelleme fonksiyonu
+    function updateLogs() {
+        fetch('/admin/logs')
+            .then(response => response.json())
+            .then(logs => {
+                const logPanel = document.getElementById('logPanel');
+                logPanel.innerHTML = logs.map(log => `
+                    <div class="mb-2 p-2 rounded ${getLogTypeClass(log.logType)}">
+                        <span class="font-semibold">${log.logDate}</span>: ${log.logDetails}
+                    </div>
+                `).join('');
+            });
+    }
+
+    function getLogTypeClass(type) {
+        switch(type) {
+            case 'ERROR': return 'bg-red-100 text-red-800';
+            case 'WARNING': return 'bg-yellow-100 text-yellow-800';
+            default: return 'bg-blue-100 text-blue-800';
+        }
+    }
+
+    // Her 5 saniyede bir logları güncelle
+    setInterval(updateLogs, 5000);
+    updateLogs(); // İlk yükleme
+</script>
+</body>
+</html>

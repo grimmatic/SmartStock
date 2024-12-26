@@ -1,6 +1,7 @@
 package yazlab.smartstock.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +13,7 @@ import yazlab.smartstock.entity.Customer;
 import yazlab.smartstock.repository.CustomerRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -25,22 +27,27 @@ public class AuthService implements UserDetailsService {
         Customer customer = customerRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı: " + username));
 
-        return new User(customer.getUsername(), customer.getPassword(), new ArrayList<>());
+        // Role'ü ROLE_ prefix'i ile birlikte ekle
+        ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + customer.getRole().name()));
+
+        return new User(customer.getUsername(), customer.getPassword(), authorities);
     }
 
     public Customer register(Customer customer) {
-        // Şifreyi hashle
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
 
-        // Varsayılan başlangıç değerlerini ayarla
         if (customer.getTotalSpent() == null) {
-            customer.setTotalSpent(0.0); // Default total spent
+            customer.setTotalSpent(0.0);
         }
         if (customer.getBudget() == null) {
-            customer.setBudget(1000.0); // Default budget
+            customer.setBudget(1000.0);
         }
         if (customer.getCustomerType() == null) {
-            customer.setCustomerType(Customer.CustomerType.STANDARD); // Default customer type
+            customer.setCustomerType(Customer.CustomerType.STANDARD);
+        }
+        if (customer.getRole() == null) {
+            customer.setRole(Customer.Role.USER);
         }
 
         return customerRepository.save(customer);

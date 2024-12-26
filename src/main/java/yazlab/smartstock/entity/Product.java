@@ -10,6 +10,10 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class Product extends BaseEntity {
     private String productName;
-    private Integer stock;
-    private Double price;
+
+    @Column(nullable = false)
+    private Integer stock = 0;
+
+    @Column(nullable = false)
+    private Double price = 0.0;
 }

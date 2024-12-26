@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -16,14 +17,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll() // Açık endpoint'ler
-                        .requestMatchers("/cart/**").permitAll() // Sepet işlemleri
-                        .anyRequest().authenticated() // Diğer tüm istekler doğrulama gerektirir
+                        .requestMatchers("/", "/index", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/api/products").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
-                        .defaultSuccessUrl("/index", true) // Giriş sonrası yönlendirme
+                        .defaultSuccessUrl("/index", true)
                         .failureUrl("/auth/login?error=true")
                         .permitAll()
                 )
@@ -33,7 +35,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/cart/**") // AJAX işlemleri için CSRF korumasını devre dışı bırak
+                        .ignoringRequestMatchers( "/admin/**","/api/orders")
                 );
 
         return http.build();
