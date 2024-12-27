@@ -96,7 +96,9 @@ public class OrderService {
 
         order.setOrderStatus(status);
         Order updatedOrder = orderRepository.save(order);
-        logService.logOrderCreation(updatedOrder);
+        if (status == Order.OrderStatus.COMPLETED) {
+            logService.logOrderCreation(updatedOrder);
+        }
         return updatedOrder;
     }
 

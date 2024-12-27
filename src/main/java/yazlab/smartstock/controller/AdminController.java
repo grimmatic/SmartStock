@@ -49,9 +49,6 @@ public class AdminController {
                 count++;
             }
             String message = count + " sipariş onaylandı ve tamamlandı";
-            if (!pendingOrders.isEmpty()) {
-                logService.logOrderCreation(pendingOrders.get(0)); // İlk siparişi örnek olarak logla
-            }
             return message;
         } catch (Exception e) {
             logService.logError("Toplu sipariş onaylama hatası: " + e.getMessage());

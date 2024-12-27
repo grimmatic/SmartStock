@@ -34,7 +34,7 @@ public class LogService {
                 order.getCustomer().getCustomerName(),
                 order.getProduct().getProductName(),
                 order.getQuantity()));
-
+        log.setCreatedAt(LocalDateTime.now());
         logRepository.save(log);
     }
 

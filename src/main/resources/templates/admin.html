@@ -130,13 +130,24 @@
             .then(logs => {
                 const logPanel = document.getElementById('logPanel');
                 logPanel.innerHTML = logs.map(log => `
-                    <div class="mb-2 p-2 rounded ${getLogTypeClass(log.logType)}">
-                        <span class="font-semibold">${log.logDate}</span>: ${log.logDetails}
-                    </div>
-                `).join('');
+                <div class="mb-2 p-2 rounded ${getLogTypeClass(log.logType)}">
+                    <span class="font-semibold">${formatDate(log.createdAt)}</span>: ${log.logDetails}
+                </div>
+            `).join('');
             });
     }
-
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleString('tr-TR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
     function getLogTypeClass(type) {
         switch(type) {
             case 'ERROR': return 'bg-red-100 text-red-800';

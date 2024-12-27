@@ -14,6 +14,7 @@ import yazlab.smartstock.repository.CustomerRepository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -35,14 +36,21 @@ public class AuthService implements UserDetailsService {
     }
 
     public Customer register(Customer customer) {
+        // Random nesnesi oluştur
+        Random random = new Random();
+
+        // 500-3000 TL arası random bütçe hesapla
+        double randomBudget = 500 + (random.nextDouble() * 2500);
+
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
 
         if (customer.getTotalSpent() == null) {
             customer.setTotalSpent(0.0);
         }
-        if (customer.getBudget() == null) {
-            customer.setBudget(1000.0);
-        }
+
+        // Bütçeyi random değer olarak ata
+        customer.setBudget(randomBudget);
+
         if (customer.getCustomerType() == null) {
             customer.setCustomerType(Customer.CustomerType.STANDARD);
         }
@@ -52,7 +60,6 @@ public class AuthService implements UserDetailsService {
 
         return customerRepository.save(customer);
     }
-
     public Customer getCurrentCustomer() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return customerRepository.findByUsername(username)

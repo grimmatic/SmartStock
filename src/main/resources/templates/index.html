@@ -195,6 +195,47 @@
         </template>
     </div>
 </section>
+
+<!-- Sipariş Durumu Modal -->
+<div id="orderStatusModal" class="fixed inset-0 bg-gray-500 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+        <!-- Yükleme Animasyonu -->
+        <div id="loadingAnimation" class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-lg font-medium text-gray-700">Siparişiniz işleniyor...</p>
+            <p class="text-sm text-gray-500 mt-2">Lütfen bekleyin</p>
+        </div>
+
+        <!-- Başarılı Durumu -->
+        <div id="successStatus" class="hidden flex flex-col items-center">
+            <div class="rounded-full bg-green-100 p-3 mb-4">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <p class="text-lg font-medium text-gray-700">Sipariş Başarıyla Alındı</p>
+            <p class="text-sm text-gray-500 mt-2">Siparişiniz admin onayına gönderildi</p>
+            <button onclick="hideOrderStatusModal()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                Tamam
+            </button>
+        </div>
+
+        <!-- Hata Durumu -->
+        <div id="errorStatus" class="hidden flex flex-col items-center">
+            <div class="rounded-full bg-red-100 p-3 mb-4">
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+            <p class="text-lg font-medium text-gray-700">Hata Oluştu</p>
+            <p id="errorMessage" class="text-sm text-gray-500 mt-2 text-center">Bir hata oluştu, lütfen tekrar deneyin.</p>
+            <button onclick="hideOrderStatusModal()" class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                Kapat
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <footer class="bg-gray-800 text-white mt-16">
     <div class="max-w-7xl mx-auto px-4 py-12">
@@ -326,14 +367,47 @@
         cartItemsDiv.innerHTML = html;
         cartTotalDiv.innerHTML = `Toplam: ${total.toFixed(2)} TL`;
     }
+    function showOrderStatusModal() {
+        const modal = document.getElementById('orderStatusModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Show loading animation by default
+        document.getElementById('loadingAnimation').classList.remove('hidden');
+        document.getElementById('successStatus').classList.add('hidden');
+        document.getElementById('errorStatus').classList.add('hidden');
+    }
+
+    function hideOrderStatusModal() {
+        const modal = document.getElementById('orderStatusModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function showOrderSuccess() {
+        document.getElementById('loadingAnimation').classList.add('hidden');
+        document.getElementById('successStatus').classList.remove('hidden');
+        document.getElementById('errorStatus').classList.add('hidden');
+    }
+
+    function showOrderError(message) {
+        document.getElementById('loadingAnimation').classList.add('hidden');
+        document.getElementById('successStatus').classList.add('hidden');
+        document.getElementById('errorStatus').classList.remove('hidden');
+        document.getElementById('errorMessage').textContent = message || 'Bir hata oluştu, lütfen tekrar deneyin.';
+    }
+
+    // Checkout function güncelleme
     function checkout() {
         if (cartItems.length === 0) {
             alert('Sepetiniz boş!');
             return;
         }
 
-        // Get CSRF token from the form
-        const csrfToken = document.querySelector('input[name="_csrf"]').value;
+        showOrderStatusModal(); // Show loading state
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 
         // Create orders for each cart item
         const orderPromises = cartItems.map(item => {
@@ -365,15 +439,20 @@
         // Wait for all orders to be processed
         Promise.all(orderPromises)
             .then(results => {
-                alert('Siparişleriniz başarıyla oluşturuldu ve admin onayına gönderildi!');
+                showOrderSuccess();
                 cartItems = [];
                 updateCartCount();
                 updateCartDisplay();
                 hideCartModal();
+
+                // 3 saniye sonra başarı modalını kapat
+                setTimeout(() => {
+                    hideOrderStatusModal();
+                }, 3000);
             })
             .catch(error => {
                 console.error('Checkout error:', error);
-                alert(error.message || 'Siparişler oluşturulurken bir hata oluştu');
+                showOrderError(error.message);
             });
     }
 
