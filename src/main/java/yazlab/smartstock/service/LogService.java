@@ -24,10 +24,17 @@ public class LogService {
         log.setCustomerId(order.getCustomer().getId());
         log.setOrderId(order.getId());
         log.setLogType(Log.LogType.INFO);
-        log.setLogDetails(String.format("Sipariş oluşturuldu - Müşteri: %s, Ürün: %s, Miktar: %d",
+
+        String action = order.getOrderStatus() == Order.OrderStatus.PENDING ?
+                "Sipariş oluşturuldu" :
+                "Sipariş onaylandı";
+
+        log.setLogDetails(String.format("%s - Müşteri: %s, Ürün: %s, Miktar: %d",
+                action,
                 order.getCustomer().getCustomerName(),
                 order.getProduct().getProductName(),
                 order.getQuantity()));
+
         logRepository.save(log);
     }
 

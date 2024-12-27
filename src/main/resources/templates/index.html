@@ -339,7 +339,7 @@
         const orderPromises = cartItems.map(item => {
             const order = {
                 product: { id: item.id },
-                quantity: 1,
+                quantity: item.quantity,
                 totalPrice: item.price,
                 orderStatus: 'PENDING'
             };

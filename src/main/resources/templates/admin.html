@@ -33,7 +33,7 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold mb-2">Bekleyen Siparişler</h3>
+            <h3 class="text-xl font-semibold mb-4">Bekleyen Siparişler</h3>
             <p class="text-3xl font-bold" th:text="${pendingOrders.size()}">0</p>
         </div>
     </div>
@@ -42,39 +42,45 @@
     <div class="bg-white rounded-lg shadow">
         <div class="p-6">
             <h2 class="text-xl font-semibold mb-4">Bekleyen Siparişler</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto" style="min-height: 200px; max-height: 80vh;">
+                <table class="w-full border-collapse table-fixed">
+                    <thead class="bg-gray-50 sticky top-0">
                     <tr>
-                        <th class="px-6 py-3 text-left">Müşteri</th>
-                        <th class="px-6 py-3 text-left">Müşteri Tipi</th>
-                        <th class="px-6 py-3 text-left">Ürün</th>
-                        <th class="px-6 py-3 text-left">Miktar</th>
-                        <th class="px-6 py-3 text-left">Toplam Fiyat</th>
-                        <th class="px-6 py-3 text-left">Sipariş Tarihi</th>
-                        <th class="px-6 py-3 text-left">Öncelik Skoru</th>
-                        <th class="px-6 py-3 text-left">Durum</th>
+                        <th class="w-[15%] px-3 py-3 text-left">Müşteri</th>
+                        <th class="w-[10%] px-3 py-3 text-left">Müşteri Tipi</th>
+                        <th class="w-[15%] px-3 py-3 text-left">Ürün</th>
+                        <th class="w-[8%] px-3 py-3 text-left">Miktar</th>
+                        <th class="w-[12%] px-3 py-3 text-left">Toplam Fiyat</th>
+                        <th class="w-[20%] px-3 py-3 text-left">Sipariş Tarihi</th>
+                        <th class="w-[10%] px-3 py-3 text-left">Öncelik Skoru</th>
+                        <th class="w-[10%] px-3 py-3 text-left">Durum</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="order : ${pendingOrders}" class="border-t">
-                        <td class="px-6 py-4" th:text="${order.customer.customerName}">John Doe</td>
-                        <td class="px-6 py-4">
-        <span class="px-2 py-1 text-xs rounded-full"
-              th:class="${order.customer.customerType == 'PREMIUM' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}"
-              th:text="${order.customer.customerType}">
-            STANDARD
-        </span>
+                    <tr th:each="order : ${pendingOrders}" class="border-b hover:bg-gray-50" th:data-order-date="${order.orderDate}" th:data-customer-type="${order.customer.customerType}">
+                        <td class="px-3 py-2 whitespace-nowrap" th:text="${order.customer.customerName}"></td>
+                        <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs rounded-full" th:text="${order.customer.customerType}"
+                          th:class="${order.customer.customerType == 'PREMIUM' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}">
+                    </span>
                         </td>
-                        <td class="px-6 py-4" th:text="${order.product.productName}">Product</td>
-                        <td class="px-6 py-4" th:text="${order.quantity}">1</td>
-                        <td class="px-6 py-4" th:text="${order.totalPrice + ' TL'}">100 TL</td>
-                        <td class="px-6 py-4" th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
-                        <td class="px-6 py-4" th:text="${order.priorityScore}">50.0</td> <!-- Öncelik Skoru -->
-                        <td class="px-6 py-4">
-        <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
-            Bekliyor
-        </span>
+                        <td class="px-3 py-2 whitespace-nowrap" th:text="${order.product.productName}"></td>
+                        <td class="px-3 py-2 whitespace-nowrap" th:text="${order.quantity}"></td>
+                        <td class="px-3 py-2 whitespace-nowrap" th:text="${#numbers.formatDecimal(order.totalPrice, 0, 'COMMA', 2, 'POINT') + ' TL'}"></td>
+                        <td class="px-3 py-2">
+                            <div class="whitespace-nowrap">
+                                <div th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></div>
+                                <div class="text-sm text-gray-500 waiting-time"></div>
+                            </div>
+                        </td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full priority-indicator"></div>
+                                <span class="priority-score"></span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-2">
+                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Bekliyor</span>
                         </td>
                     </tr>
                     </tbody>
@@ -88,7 +94,7 @@
         <div class="p-6">
             <h2 class="text-xl font-semibold mb-4">Sistem Logları</h2>
             <div id="logPanel" class="log-panel bg-gray-50 p-4 rounded-lg">
-                <!-- Loglar buraya dinamik olarak eklenecek -->
+
             </div>
         </div>
     </div>
@@ -142,6 +148,52 @@
     // Her 5 saniyede bir logları güncelle
     setInterval(updateLogs, 5000);
     updateLogs(); // İlk yükleme
+
+
+    function updateTimesAndPriorities() {
+        const rows = document.querySelectorAll('tbody tr');
+        const now = new Date();
+
+        rows.forEach(row => {
+            const orderDate = new Date(row.dataset.orderDate);
+            const customerType = row.dataset.customerType;
+            const oldDiffInSeconds = parseInt(row.dataset.diffInSeconds || '0');
+            const newDiffInSeconds = Math.floor((now - orderDate) / 1000);
+
+            if (oldDiffInSeconds !== newDiffInSeconds) {
+                row.dataset.diffInSeconds = newDiffInSeconds;
+                const minutes = Math.floor(newDiffInSeconds / 60);
+                const seconds = newDiffInSeconds % 60;
+
+                const waitingTimeElement = row.querySelector('.waiting-time');
+                if (waitingTimeElement) {
+                    waitingTimeElement.textContent = `Bekleme: ${minutes} dk ${seconds} sn`;
+                }
+
+                const basePriority = customerType === 'PREMIUM' ? 15 : 10;
+                const waitingScore = newDiffInSeconds * 0.5;
+                const priorityScore = basePriority + waitingScore;
+
+                const scoreElement = document.querySelectorAll('.priority-score');
+                scoreElement.forEach(el => el.textContent = priorityScore.toFixed(2));
+                const indicatorElement = row.querySelector('.priority-indicator');
+
+                if (scoreElement && indicatorElement) {
+                    scoreElement.textContent = priorityScore.toFixed(2);
+                    indicatorElement.className = `w-2 h-2 rounded-full ${
+                        priorityScore >= 20 ? 'bg-red-500' :
+                            priorityScore >= 15 ? 'bg-yellow-500' : 'bg-green-500'
+                    }`;
+                }
+
+            }
+        });
+    }
+
+    setInterval(updateTimesAndPriorities, 1000);
+    updateTimesAndPriorities();
 </script>
+
+
 </body>
 </html>

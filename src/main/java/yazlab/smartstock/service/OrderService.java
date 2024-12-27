@@ -2,6 +2,7 @@ package yazlab.smartstock.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import yazlab.smartstock.entity.Customer;
 import yazlab.smartstock.entity.Order;
 import yazlab.smartstock.entity.Product;
@@ -9,6 +10,7 @@ import yazlab.smartstock.repository.OrderRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,70 +30,73 @@ public class OrderService {
 
     public Order processOrder(Order order) {
         Customer customer = authService.getCurrentCustomer();
-
-        // Ürünü veritabanından tam olarak çek
         Product product = productService.findById(order.getProduct().getId());
         order.setProduct(product);
+        order.setCustomer(customer); // Null pointer hatasını önlemek için
 
-        // Ürün adedi kontrolü
         if (order.getQuantity() > 5) {
             throw new RuntimeException("Bir üründen en fazla 5 adet sipariş verebilirsiniz.");
         }
 
-        // Stok kontrolü
+        // Mevcut bekleyen (onaylanmamış) siparişleri hesaba katmadan stok kontrolü
         if (product.getStock() < order.getQuantity()) {
             throw new RuntimeException("Yetersiz stok: " + product.getProductName());
         }
 
-        // Bütçe kontrolü
         double totalPrice = product.getPrice() * order.getQuantity();
         if (customer.getBudget() < totalPrice) {
             throw new RuntimeException("Yetersiz bakiye! Mevcut bakiye: " +
                     customer.getBudget() + " TL, Gerekli tutar: " + totalPrice + " TL");
         }
 
-        // Sipariş detaylarını ayarla
-        order.setCustomer(customer);
         order.setTotalPrice(totalPrice);
         order.setOrderDate(LocalDateTime.now());
         order.setOrderStatus(Order.OrderStatus.PENDING);
-
-        // Öncelik skorunu hesapla ve ata
         order.setPriorityScore(calculatePriorityScore(order));
 
-        // Siparişi kaydet ve logla
         Order savedOrder = orderRepository.save(order);
         logService.logOrderCreation(savedOrder);
-
         return savedOrder;
     }
 
 
+    @Transactional
     public synchronized Order updateOrderStatus(Long id, Order.OrderStatus status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı"));
 
-        // Eğer sipariş zaten COMPLETED ise tekrar işlem yapma
         if (order.getOrderStatus() == Order.OrderStatus.COMPLETED) {
             throw new RuntimeException("Bu sipariş zaten tamamlanmış!");
         }
 
-        order.setOrderStatus(status);
+        Product product = order.getProduct();
 
         if (status == Order.OrderStatus.COMPLETED) {
-            // Müşteri bakiyesini güncelle
+            // Yüksek öncelikli bekleyen siparişleri kontrol et
+            List<Order> higherPriorityOrders = orderRepository.findByOrderStatus(Order.OrderStatus.PENDING)
+                    .stream()
+                    .filter(o -> o.getProduct().getId().equals(product.getId()))
+                    .filter(o -> o.getPriorityScore() > order.getPriorityScore())
+                    .collect(Collectors.toList());
+
+            int reservedStock = higherPriorityOrders.stream()
+                    .mapToInt(Order::getQuantity)
+                    .sum();
+
+            if (product.getStock() - reservedStock < order.getQuantity()) {
+                throw new RuntimeException("Daha yüksek öncelikli siparişler için stok rezerve edilmiş");
+            }
+
             Customer customer = order.getCustomer();
             customer.setBudget(customer.getBudget() - order.getTotalPrice());
             customer.setTotalSpent(customer.getTotalSpent() + order.getTotalPrice());
-
-            // Ürün stoğunu güncelle
-            Product product = order.getProduct();
             product.setStock(product.getStock() - order.getQuantity());
+            productService.save(product);
         }
 
+        order.setOrderStatus(status);
         Order updatedOrder = orderRepository.save(order);
         logService.logOrderCreation(updatedOrder);
-
         return updatedOrder;
     }
 

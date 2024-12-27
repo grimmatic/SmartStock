@@ -110,8 +110,8 @@ public class DatabaseInitializer implements CommandLineRunner {
                     createProduct("Cips", 22.99, 350),
                     createProduct("Ekmek", 7.99, 500),
                     createProduct("Süt (1 lt)", 19.99, 200),
-                    createProduct("Yoğurt (1 kg)", 35.99, 150),
-                    createProduct("Anan", 31.31, 7)
+                    createProduct("Yoğurt (1 kg)", 35.99, 150)
+
             );
 
             productRepository.saveAll(products);

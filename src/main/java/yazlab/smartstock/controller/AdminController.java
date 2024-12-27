@@ -34,7 +34,7 @@ public class AdminController {
     @GetMapping
     public String adminPage(Model model) {
         model.addAttribute("pendingOrders", orderService.getPendingOrdersSortedByPriority());
-        model.addAttribute("currentCustomer", authService.getCurrentCustomer()); // Bunu ekleyelim
+        model.addAttribute("currentCustomer", authService.getCurrentCustomer());
         return "admin";
     }
 
