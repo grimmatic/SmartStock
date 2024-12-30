@@ -49,12 +49,24 @@ public class OrderService {
                     customer.getBudget() + " TL, Gerekli tutar: " + totalPrice + " TL");
         }
 
+
+
         order.setTotalPrice(totalPrice);
+
+
         order.setOrderDate(LocalDateTime.now());
         order.setOrderStatus(Order.OrderStatus.PENDING);
-        order.setPriorityScore(calculatePriorityScore(order));
+        order.setLastPriorityUpdateTime(order.getOrderDate());
+
+        double basePriority = order.getCustomer().getCustomerType() == Customer.CustomerType.PREMIUM ? 15.0 : 10.0;
+        order.setPriorityScore(basePriority);
 
         Order savedOrder = orderRepository.save(order);
+
+        System.out.println("New Order Created - ID: " + savedOrder.getId() +
+                " Initial Score: " + savedOrder.getPriorityScore() +
+                " Order Date: " + savedOrder.getOrderDate());
+
         logService.logOrderCreation(savedOrder);
         return savedOrder;
     }
@@ -127,9 +139,33 @@ public class OrderService {
     public List<Order> getPendingOrdersSortedByPriority() {
         List<Order> orders = orderRepository.findByOrderStatus(Order.OrderStatus.PENDING);
 
-        // Siparişleri dinamik olarak priorityScore'a göre sıralayın
-        orders.sort((o1, o2) -> Double.compare(o2.getPriorityScore(), o1.getPriorityScore()));
+        System.out.println("--- Pending Orders Before Update ---");
+        orders.forEach(order -> {
+            System.out.println("Order ID: " + order.getId() +
+                    " Current Score: " + order.getPriorityScore() +
+                    " Order Date: " + order.getOrderDate());
+        });
 
+        orders.forEach(order -> {
+            double oldScore = order.getPriorityScore();
+            double currentScore = order.calculateCurrentPriorityScore();
+            order.setPriorityScore(currentScore);
+            order.setLastPriorityUpdateTime(LocalDateTime.now());
+
+            System.out.println("Order ID: " + order.getId() +
+                    " Old Score: " + oldScore +
+                    " New Score: " + currentScore);
+
+            orderRepository.save(order);
+        });
+
+        System.out.println("--- Pending Orders After Update ---");
+        orders.forEach(order -> {
+            System.out.println("Order ID: " + order.getId() +
+                    " Final Score: " + order.getPriorityScore());
+        });
+
+        orders.sort((o1, o2) -> Double.compare(o2.getPriorityScore(), o1.getPriorityScore()));
         return orders;
     }
 

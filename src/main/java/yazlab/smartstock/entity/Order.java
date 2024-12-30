@@ -22,9 +22,12 @@ public class Order extends BaseEntity {
     private Double totalPrice;
     private LocalDateTime orderDate;
 
+    @Column(nullable = false)
+    private Double priorityScore = 0.0;  // varsayılan değer ekleyelim
 
-    @Transient
-    private Double priorityScore;
+    @Column(nullable = false)
+    private LocalDateTime lastPriorityUpdateTime;
+
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
@@ -36,18 +39,31 @@ public class Order extends BaseEntity {
     }
 
 
-    // Dinamik PriorityScore Hesaplama
-    public Double getPriorityScore() {
+    public Double calculateCurrentPriorityScore() {
         double basePriority = customer.getCustomerType() == Customer.CustomerType.PREMIUM ? 15 : 10;
 
-        // Bekleme Süresi (saniye cinsinden)
-        long waitingTimeInSeconds = java.time.Duration.between(orderDate, LocalDateTime.now()).getSeconds();
+        if (lastPriorityUpdateTime == null) {
+            lastPriorityUpdateTime = orderDate;  // orderDate kullanıyoruz
+            return basePriority;
+        }
 
-        // Bekleme Süresi Ağırlığı
-        double waitingWeight = 0.5;
+        // Sipariş tarihinden itibaren geçen toplam süreyi hesapla
+        long totalWaitingTimeInSeconds = java.time.Duration.between(orderDate, LocalDateTime.now()).getSeconds();
 
-        // Öncelik Skoru Hesaplama
-        return basePriority + (waitingTimeInSeconds * waitingWeight);
+        return basePriority + (totalWaitingTimeInSeconds * 0.5);
+    }
+
+
+    public void prePersist() {
+        if (orderDate == null) {
+            orderDate = LocalDateTime.now();
+        }
+        if (lastPriorityUpdateTime == null) {
+            lastPriorityUpdateTime = orderDate;
+        }
+        if (priorityScore == null || priorityScore == 0.0) {
+            priorityScore = customer.getCustomerType() == Customer.CustomerType.PREMIUM ? 15.0 : 10.0;
+        }
     }
 
 }

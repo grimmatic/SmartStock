@@ -185,8 +185,8 @@
                 const waitingScore = newDiffInSeconds * 0.5;
                 const priorityScore = basePriority + waitingScore;
 
-                const scoreElement = document.querySelectorAll('.priority-score');
-                scoreElement.forEach(el => el.textContent = priorityScore.toFixed(2));
+                // Bu satırı değiştirdik - sadece mevcut satırdaki skoru güncelliyoruz
+                const scoreElement = row.querySelector('.priority-score');
                 const indicatorElement = row.querySelector('.priority-indicator');
 
                 if (scoreElement && indicatorElement) {
@@ -196,7 +196,6 @@
                             priorityScore >= 15 ? 'bg-yellow-500' : 'bg-green-500'
                     }`;
                 }
-
             }
         });
     }

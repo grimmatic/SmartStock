@@ -23,7 +23,17 @@ public class AdminController {
 
     @GetMapping("/orders")
     public String viewOrders(Model model) {
-        model.addAttribute("pendingOrders", orderService.getPendingOrdersSortedByPriority());
+        List<Order> pendingOrders = orderService.getPendingOrdersSortedByPriority();
+
+        // Debug için log ekleyelim
+        System.out.println("--- Sending Orders to View ---");
+        pendingOrders.forEach(order -> {
+            System.out.println("Order ID: " + order.getId() +
+                    " Priority Score: " + order.getPriorityScore() +
+                    " Customer Type: " + order.getCustomer().getCustomerType());
+        });
+
+        model.addAttribute("pendingOrders", pendingOrders);
         model.addAttribute("currentCustomer", authService.getCurrentCustomer());
         return "admin/orders";
     }
