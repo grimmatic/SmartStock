@@ -1,18 +1,28 @@
 package yazlab.smartstock.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**") // API yollarını belirtiyoruz
-                .allowedOrigins("http://localhost:8080", "http://localhost:3000") // Frontend URL'lerini ekleyin
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // İzin verilen HTTP metodları
-                .allowedHeaders("*") // Tüm header'lara izin ver
-                .allowCredentials(true); // Kimlik bilgilerini dahil et
+        registry.addMapping("/api/**")
+                .allowedOrigins("http://localhost:8080", "http://localhost:3000")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("classpath:/static/images/")
+                .setCachePeriod(0);
     }
 }

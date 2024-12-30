@@ -138,6 +138,23 @@ public class DatabaseInitializer implements CommandLineRunner {
         product.setProductName(name);
         product.setPrice(price);
         product.setStock(stock);
+
+        String fileName = name
+                .toLowerCase()
+                .replace("ğ", "g")
+                .replace("ü", "u")
+                .replace("ş", "s")
+                .replace("ı", "i")
+                .replace("ö", "o")
+                .replace("ç", "c")
+                .replace(" ", "-")
+                .replaceAll("\\([^)]*\\)", "")
+                .replaceAll("[^a-z0-9-]", "")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "")
+                .trim() + ".png";
+
+        product.setImageUrl("/images/products/" + fileName);
         return product;
     }
 

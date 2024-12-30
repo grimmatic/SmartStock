@@ -17,4 +17,20 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Double price = 0.0;
 
+    // Yeni eklenen alan
+    private String imageUrl;
+
+    public String getImageFileName() {
+        return this.productName
+                .toLowerCase()
+                .replace("ğ", "g")
+                .replace("ü", "u")
+                .replace("ş", "s")
+                .replace("ı", "i")
+                .replace("ö", "o")
+                .replace("ç", "c")
+                .replaceAll("[^a-z0-9]", "-")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "") + ".png";
+    }
 }

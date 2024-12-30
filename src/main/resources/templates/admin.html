@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Admin Panel - Siparişler</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
     <style>
@@ -116,7 +118,6 @@
         </div>
     </div>
 
-    <!-- Ürün Ekle Modal -->
     <div id="addProductModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white rounded-lg shadow p-6 w-96">
             <h3 class="text-lg font-semibold mb-4">Yeni Ürün Ekle</h3>
@@ -136,6 +137,13 @@
                     <input id="productPrice" name="productPrice" type="number" step="0.01" min="0"
                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
+                <!-- Yeni eklenen dosya yükleme alanı -->
+                <div class="mb-4">
+                    <label for="productImage" class="block text-sm font-medium text-gray-700">Ürün Fotoğrafı (PNG)</label>
+                    <input id="productImage" name="productImage" type="file" accept=".png"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <p class="mt-1 text-sm text-gray-500">Önerilen boyut: 400x300 piksel</p>
+                </div>
                 <div class="flex justify-end gap-4">
                     <button type="button" onclick="hideAddProductModal()"
                             class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
@@ -149,7 +157,6 @@
             </form>
         </div>
     </div>
-
 
     <!-- Log Panel -->
     <div class="mt-6 bg-white rounded-lg shadow">
@@ -263,25 +270,63 @@
         document.getElementById('addProductModal').classList.add('hidden');
     }
 
-    document.getElementById('addProductForm').addEventListener('submit', event => {
-        event.preventDefault();
+    document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData();
+
         const productName = document.getElementById('productName').value;
         const productStock = document.getElementById('productStock').value;
         const productPrice = document.getElementById('productPrice').value;
+        const productImage = document.getElementById('productImage').files[0];
 
-        fetch('/api/products', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productName, stock: productStock, price: productPrice })
-        }).then(response => {
-            if (response.ok) {
-                alert('Ürün başarıyla eklendi!');
-                fetchProducts();
-                hideAddProductModal();
-            } else {
-                alert('Ürün eklenirken bir hata oluştu.');
+        // Form verilerini kontrol et
+        if (!productName || !productStock || !productPrice || !productImage) {
+            alert('Lütfen tüm alanları doldurun ve bir resim seçin.');
+            return;
+        }
+
+        // Dosya türünü kontrol et
+        if (!productImage.type.includes('png')) {
+            alert('Lütfen sadece PNG formatında resim yükleyin.');
+            return;
+        }
+
+        formData.append('name', productName);
+        formData.append('stock', productStock);
+        formData.append('price', productPrice);
+        formData.append('image', productImage);
+
+        try {
+            // CSRF token kontrolü
+            const headers = new Headers();
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            if (csrfToken && csrfHeader) {
+                headers.append(csrfHeader, csrfToken);
             }
-        });
+
+            const response = await fetch('/api/products/upload', {
+                method: 'POST',
+                headers: headers,
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            const result = await response.json();
+            console.log('Success:', result);
+            alert('Ürün başarıyla eklendi!');
+            hideAddProductModal();
+            fetchProducts(); // Ürün listesini yenile
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Hata: ' + error.message);
+        }
     });
 
     // Ürün Sil

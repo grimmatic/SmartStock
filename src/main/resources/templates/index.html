@@ -477,7 +477,28 @@
                     clone.querySelector('.product-name').textContent = product.productName;
                     clone.querySelector('.price-tag').textContent = `${product.price.toFixed(2)} TL`;
                     clone.querySelector('.stock-badge').textContent = `${product.stock} Adet`;
+                    const imgElement = clone.querySelector('img');
+                    if (product.imageUrl) {
+                        imgElement.src = product.imageUrl;
+                    } else {
 
+                        const fileName = product.productName
+                            .toLowerCase()
+                            .replace(/ğ/g, "g")
+                            .replace(/ü/g, "u")
+                            .replace(/ş/g, "s")
+                            .replace(/ı/g, "i")
+                            .replace(/ö/g, "o")
+                            .replace(/ç/g, "c")
+                            .replace(/ /g, "-")
+                            .replace(/\([^)]*\)/g, "")
+                            .replace(/[^a-z0-9-]/g, "")
+                            .replace(/-+/g, "-")
+                            .replace(/^-|-$/g, "")
+                            .trim() + ".png";
+                        imgElement.src = `/images/products/${fileName}`;
+                    }
+                    imgElement.alt = product.productName;
                     // Miktar kontrollerini ayarla
                     const quantityInput = clone.querySelector('.quantity-input');
                     const decreaseBtn = clone.querySelector('.quantity-decrease');
