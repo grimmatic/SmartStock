@@ -35,4 +35,11 @@ public class ProductController {
             @RequestParam Integer quantity) {
         return ResponseEntity.ok(productService.updateStock(id, quantity));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

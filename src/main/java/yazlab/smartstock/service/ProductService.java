@@ -44,4 +44,12 @@ public class ProductService {
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
+
+
+    public void deleteById(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("Ürün bulunamadı: ID = " + id);
+        }
+        productRepository.deleteById(id);
+    }
 }

@@ -41,20 +41,32 @@ public class AdminController {
     @PostMapping("/orders/approve-all")
     @ResponseBody
     public String approveAllOrders() {
-        try {
-            List<Order> pendingOrders = orderService.getPendingOrders();
-            int count = 0;
-            for (Order order : pendingOrders) {
+        List<Order> pendingOrders = orderService.getPendingOrders();
+        int approvedCount = 0;
+        int deletedCount = 0;
+
+        for (Order order : pendingOrders) {
+            try {
+                // Siparişi tamamla
                 orderService.updateOrderStatus(order.getId(), Order.OrderStatus.COMPLETED);
-                count++;
+                approvedCount++;
+            } catch (RuntimeException e) {
+                // Yetersiz stok veya başka bir hata nedeniyle işlenemeyen siparişleri sil
+                orderService.deleteOrderById(order.getId());
+                deletedCount++;
             }
-            String message = count + " sipariş onaylandı ve tamamlandı";
-            return message;
-        } catch (Exception e) {
-            logService.logError("Toplu sipariş onaylama hatası: " + e.getMessage());
-            return "Hata: " + e.getMessage();
         }
+
+        // Sonuç mesajını oluştur
+        StringBuilder resultMessage = new StringBuilder();
+        resultMessage.append(approvedCount).append(" sipariş başarıyla onaylandı.");
+        if (deletedCount > 0) {
+            resultMessage.append(" ").append(deletedCount).append(" sipariş stok yetersizliği nedeniyle silindi.");
+        }
+
+        return resultMessage.toString();
     }
+
 
     @GetMapping("/logs")
     @ResponseBody

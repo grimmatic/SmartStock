@@ -134,6 +134,19 @@ public class OrderService {
     }
 
 
+    @Transactional
+    public void deleteOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Silinecek sipariş bulunamadı: ID = " + id));
+
+        // Loglama için order detaylarını alıyoruz
+        logService.logOrderDeletion(order, "Stok yetersizliği nedeniyle silindi");
+
+        // Siparişi veri tabanından siliyoruz
+        orderRepository.delete(order);
+    }
+
+
 
 
 }

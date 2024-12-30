@@ -51,4 +51,23 @@ public class LogService {
         log.setLogDetails(message);
         logRepository.save(log);
     }
+
+
+    public void logOrderDeletion(Order order, String reason) {
+        Log log = new Log();
+        log.setLogType(Log.LogType.WARNING); // Silme işlemi genelde uyarı olarak loglanır
+        log.setCustomerId(order.getCustomer().getId());
+        log.setOrderId(order.getId());
+        log.setLogDetails(String.format(
+                "Sipariş silindi - ID: %d, Müşteri: %s, Ürün: %s, Miktar: %d, Sebep: %s",
+                order.getId(),
+                order.getCustomer().getCustomerName(),
+                order.getProduct().getProductName(),
+                order.getQuantity(),
+                reason
+        ));
+        log.setCreatedAt(LocalDateTime.now());
+        logRepository.save(log);
+    }
+
 }
