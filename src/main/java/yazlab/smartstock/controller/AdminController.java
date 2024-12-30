@@ -51,20 +51,30 @@ public class AdminController {
     @PostMapping("/orders/approve-all")
     @ResponseBody
     public String approveAllOrders() {
-        try {
-            List<Order> pendingOrders = orderService.getPendingOrders();
-            int count = 0;
-            for (Order order : pendingOrders) {
+        List<Order> pendingOrders = orderService.getPendingOrders();
+        int approvedCount = 0;
+        int skippedCount = 0;
+
+        for (Order order : pendingOrders) {
+            try {
                 orderService.updateOrderStatus(order.getId(), Order.OrderStatus.COMPLETED);
-                count++;
+                approvedCount++;
+            } catch (RuntimeException e) {
+                // Yetersiz stok nedeniyle işlenemeyen siparişler loglanır
+                logService.logError("Sipariş işlenemedi (ID: " + order.getId() + "): " + e.getMessage());
+                skippedCount++;
             }
-            String message = count + " sipariş onaylandı ve tamamlandı";
-            return message;
-        } catch (Exception e) {
-            logService.logError("Toplu sipariş onaylama hatası: " + e.getMessage());
-            return "Hata: " + e.getMessage();
         }
+
+        StringBuilder resultMessage = new StringBuilder();
+        resultMessage.append(approvedCount).append(" sipariş başarıyla onaylandı.");
+        if (skippedCount > 0) {
+            resultMessage.append(" ").append(skippedCount).append(" sipariş stok yetersizliği nedeniyle atlandı.");
+        }
+
+        return resultMessage.toString();
     }
+
 
     @GetMapping("/logs")
     @ResponseBody
