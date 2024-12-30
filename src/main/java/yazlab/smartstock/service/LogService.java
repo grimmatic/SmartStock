@@ -2,6 +2,7 @@ package yazlab.smartstock.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import yazlab.smartstock.entity.Customer;
 import yazlab.smartstock.entity.Log;
 import yazlab.smartstock.entity.Order;
 import yazlab.smartstock.entity.Product;
@@ -26,16 +27,25 @@ public class LogService {
         log.setOrderId(order.getId());
         log.setLogType(Log.LogType.INFO);
 
-        String action = order.getOrderStatus() == Order.OrderStatus.PENDING ?
-                "Sipariş oluşturuldu" :
-                "Sipariş onaylandı";
+        String action = switch (order.getOrderStatus()) {
+            case PENDING -> "Sipariş oluşturuldu";
+            case COMPLETED -> {
+                if (order.getCustomer().getCustomerType() == Customer.CustomerType.STANDARD
+                        && order.getCustomer().getTotalSpent() >= 2000) {
+                    yield "Sipariş onaylandı ve müşteri Premium üyeliğe yükseltildi";
+                }
+                yield "Sipariş onaylandı";
+            }
+            case CANCELLED -> "Sipariş iptal edildi";
+        };
 
-        log.setLogDetails(String.format("%s - Müşteri: %s, Ürün: %s, Miktar: %d",
+        log.setLogDetails(String.format("%s - Müşteri: %s (%s), Ürün: %s, Miktar: %d",
                 action,
                 order.getCustomer().getCustomerName(),
+                order.getCustomer().getCustomerType(),
                 order.getProduct().getProductName(),
                 order.getQuantity()));
-        log.setCreatedAt(LocalDateTime.now());
+
         logRepository.save(log);
     }
 
@@ -86,5 +96,10 @@ public class LogService {
         log.setCreatedAt(LocalDateTime.now());
         logRepository.save(log);
     }
-
+    public void logInfo(String message) {
+        Log log = new Log();
+        log.setLogType(Log.LogType.INFO);
+        log.setLogDetails(message);
+        logRepository.save(log);
+    }
 }

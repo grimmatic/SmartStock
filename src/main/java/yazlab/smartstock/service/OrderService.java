@@ -72,6 +72,9 @@ public class OrderService {
         Product product = order.getProduct();
 
         if (status == Order.OrderStatus.COMPLETED) {
+
+
+
             // Yüksek öncelikli bekleyen siparişleri kontrol et
             List<Order> higherPriorityOrders = orderRepository.findByOrderStatus(Order.OrderStatus.PENDING)
                     .stream()
@@ -87,12 +90,21 @@ public class OrderService {
                 throw new RuntimeException("Daha yüksek öncelikli siparişler için stok rezerve edilmiş");
             }
 
+
+
             Customer customer = order.getCustomer();
             customer.setBudget(customer.getBudget() - order.getTotalPrice());
             customer.setTotalSpent(customer.getTotalSpent() + order.getTotalPrice());
             product.setStock(product.getStock() - order.getQuantity());
             productService.save(product);
+            if (customer.getCustomerType() == Customer.CustomerType.STANDARD
+                    && customer.getTotalSpent() >= 2000) {
+                customer.setCustomerType(Customer.CustomerType.PREMIUM);
+                logService.logInfo("Müşteri Premium üyeliğe yükseltildi: " + customer.getCustomerName());
+            }
         }
+
+
 
         order.setOrderStatus(status);
         Order updatedOrder = orderRepository.save(order);

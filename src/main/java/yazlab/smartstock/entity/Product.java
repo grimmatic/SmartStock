@@ -16,4 +16,5 @@ public class Product extends BaseEntity {
 
     @Column(nullable = false)
     private Double price = 0.0;
+
 }

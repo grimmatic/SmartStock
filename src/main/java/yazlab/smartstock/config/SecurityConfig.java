@@ -20,10 +20,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/products").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/products","/api/orders").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/admin/**", "/api/**").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -39,9 +39,9 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/products/**", "/api/orders/**", "/admin/**")
+                        .ignoringRequestMatchers("/api/products/**", "/api/orders/**", "/admin/**","/api/**")
                 )
-                .cors(withDefaults()); // CORS yapılandırmasını etkinleştirin
+                .cors(withDefaults());
 
         return http.build();
     }

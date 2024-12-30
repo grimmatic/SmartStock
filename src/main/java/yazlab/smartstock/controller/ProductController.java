@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yazlab.smartstock.entity.Product;
+import yazlab.smartstock.service.LogService;
 import yazlab.smartstock.service.ProductService;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final LogService logService;
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -37,9 +39,14 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        try {
+            productService.deleteById(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            logService.logWarning("Ürün silme başarısız: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }

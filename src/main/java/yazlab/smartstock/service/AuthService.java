@@ -36,10 +36,9 @@ public class AuthService implements UserDetailsService {
     }
 
     public Customer register(Customer customer) {
-        // Random nesnesi oluştur
+
         Random random = new Random();
 
-        // 500-3000 TL arası random bütçe hesapla
         double randomBudget = 500 + (random.nextDouble() * 2500);
 
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
