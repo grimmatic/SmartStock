@@ -15,8 +15,9 @@ public class Order extends BaseEntity {
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = true, foreignKey = @ForeignKey(name = "fk_order_product"))
     private Product product;
+
 
     private Integer quantity;
     private Double totalPrice;

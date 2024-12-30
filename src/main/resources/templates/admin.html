@@ -89,6 +89,68 @@
         </div>
     </div>
 
+
+    <!-- Mevcut Ürünler Bölümü -->
+    <div class="mt-6 bg-white rounded-lg shadow">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4">Mevcut Ürünler</h2>
+            <div class="mb-4">
+                <button id="addProductBtn" onclick="showAddProductModal()"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    Yeni Ürün Ekle
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse table-fixed">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th class="w-[30%] px-3 py-3 text-left">Ürün Adı</th>
+                        <th class="w-[20%] px-3 py-3 text-left">Stok</th>
+                        <th class="w-[20%] px-3 py-3 text-left">Fiyat</th>
+                        <th class="w-[30%] px-3 py-3 text-left">İşlemler</th>
+                    </tr>
+                    </thead>
+                    <tbody id="productTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ürün Ekle Modal -->
+    <div id="addProductModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow p-6 w-96">
+            <h3 class="text-lg font-semibold mb-4">Yeni Ürün Ekle</h3>
+            <form id="addProductForm">
+                <div class="mb-4">
+                    <label for="productName" class="block text-sm font-medium text-gray-700">Ürün Adı</label>
+                    <input id="productName" name="productName" type="text"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="productStock" class="block text-sm font-medium text-gray-700">Stok</label>
+                    <input id="productStock" name="productStock" type="number" min="0"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="productPrice" class="block text-sm font-medium text-gray-700">Fiyat</label>
+                    <input id="productPrice" name="productPrice" type="number" step="0.01" min="0"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="hideAddProductModal()"
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                        İptal
+                    </button>
+                    <button type="submit"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <!-- Log Panel -->
     <div class="mt-6 bg-white rounded-lg shadow">
         <div class="p-6">
@@ -99,6 +161,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     function approveAllOrders() {
@@ -148,6 +211,109 @@
             second: '2-digit'
         });
     }
+
+    //deneme yeriii
+
+    // Ürünleri Getir
+    function fetchProducts() {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(products => {
+                const tableBody = document.getElementById('productTableBody');
+                tableBody.innerHTML = products.map(product => `
+                    <tr class="border-b">
+                        <td class="px-3 py-2">${product.productName}</td>
+                        <td class="px-3 py-2">${product.stock}</td>
+                        <td class="px-3 py-2">${product.price.toFixed(2)} TL</td>
+                        <td class="px-3 py-2">
+                            <button onclick="showUpdateStockModal(${product.id})"
+                                    class="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition">
+                                Stok Güncelle
+                            </button>
+                            <button onclick="deleteProduct(${product.id})"
+                                    class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition">
+                                Sil
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    // Yeni Ürün Ekle
+    function showAddProductModal() {
+        document.getElementById('addProductModal').classList.remove('hidden');
+    }
+
+    function hideAddProductModal() {
+        document.getElementById('addProductModal').classList.add('hidden');
+    }
+
+    document.getElementById('addProductForm').addEventListener('submit', event => {
+        event.preventDefault();
+        const productName = document.getElementById('productName').value;
+        const productStock = document.getElementById('productStock').value;
+        const productPrice = document.getElementById('productPrice').value;
+
+        fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productName, stock: productStock, price: productPrice })
+        }).then(response => {
+            if (response.ok) {
+                alert('Ürün başarıyla eklendi!');
+                fetchProducts();
+                hideAddProductModal();
+            } else {
+                alert('Ürün eklenirken bir hata oluştu.');
+            }
+        });
+    });
+
+    // Ürün Sil
+    function deleteProduct(productId) {
+        if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
+
+        fetch(`/api/products/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                alert('Ürün başarıyla silindi!');
+                fetchProducts(); // Tabloyu yeniden yükleyin
+            } else {
+                alert('Ürün silinirken bir hata oluştu.');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu.');
+        });
+    }
+
+
+    // Ürün Stok Güncelle
+    function showUpdateStockModal(productId) {
+        const quantity = prompt('Stok miktarını giriniz (pozitif veya negatif değer):');
+        if (quantity === null) return;
+
+        fetch(`/api/products/${productId}/stock?quantity=${quantity}`, {
+            method: 'PUT'
+        }).then(response => {
+            if (response.ok) {
+                alert('Stok başarıyla güncellendi!');
+                fetchProducts();
+            } else {
+                alert('Stok güncellenirken bir hata oluştu.');
+            }
+        });
+    }
+
+    // Sayfa yüklenince ürünleri getir
+    fetchProducts();
+
+    //deneme yeri bitimiii
     function getLogTypeClass(type) {
         switch(type) {
             case 'ERROR': return 'bg-red-100 text-red-800';
