@@ -11,6 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
+    private final LogService logService; // LogService ekleniyor
 
     public List<Product> findAll() {
         return productRepository.findAll();
@@ -29,7 +30,9 @@ public class ProductService {
         if (product.getPrice() == null) {
             product.setPrice(0.0);
         }
-        return productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+        logService.logProductAction("Ekleme", savedProduct); // Loglama
+        return savedProduct;
     }
 
     public synchronized Product updateStock(Long id, Integer quantity) {
@@ -38,18 +41,18 @@ public class ProductService {
             product.setStock(0);
         }
         product.setStock(product.getStock() + quantity);
-        return productRepository.save(product);
+        Product updatedProduct = productRepository.save(product);
+        logService.logProductAction("Stok Güncelleme", updatedProduct); // Loglama
+        return updatedProduct;
     }
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-
     public void deleteById(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new RuntimeException("Ürün bulunamadı: ID = " + id);
-        }
+        Product product = findById(id);
         productRepository.deleteById(id);
+        logService.logProductAction("Silme", product); // Loglama
     }
 }

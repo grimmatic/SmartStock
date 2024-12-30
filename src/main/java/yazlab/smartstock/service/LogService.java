@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import yazlab.smartstock.entity.Log;
 import yazlab.smartstock.entity.Order;
+import yazlab.smartstock.entity.Product;
 import yazlab.smartstock.repository.LogRepository;
 
 import java.time.LocalDateTime;
@@ -65,6 +66,22 @@ public class LogService {
                 order.getProduct().getProductName(),
                 order.getQuantity(),
                 reason
+        ));
+        log.setCreatedAt(LocalDateTime.now());
+        logRepository.save(log);
+    }
+
+
+    public void logProductAction(String action, Product product) {
+        Log log = new Log();
+        log.setLogType(Log.LogType.INFO);
+        log.setLogDetails(String.format(
+                "Ürün İşlemi: %s - Ürün ID: %d, İsim: %s, Stok: %d, Fiyat: %.2f",
+                action,
+                product.getId(),
+                product.getProductName(),
+                product.getStock(),
+                product.getPrice()
         ));
         log.setCreatedAt(LocalDateTime.now());
         logRepository.save(log);
